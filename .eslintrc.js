@@ -8,8 +8,8 @@ module.exports = {
     project: 'tsconfig.json',
     sourceType: 'module',
   },
-  plugins: [
-    'airbnb-base',
+  extends: [
+    'airbnb-typescript/base',
     'plugin:@typescript-eslint/eslint-recommended', // Disable base rules
     'plugin:@typescript-eslint/recommended', // Enable ts rules
     'prettier',
