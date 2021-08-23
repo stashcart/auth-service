@@ -1,26 +1,14 @@
-import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { AmqpModule } from './amqp/amqp.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    RabbitMQModule.forRootAsync(RabbitMQModule, {
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get('RABBITMQ_URL'),
-        exchanges: [
-          {
-            name: 'user',
-            type: 'topic',
-          },
-        ],
-        connectionInitOptions: { wait: false },
-      }),
-    }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -34,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
         synchronize: true,
       }),
     }),
+    AmqpModule,
     UsersModule,
     AuthModule,
   ],
