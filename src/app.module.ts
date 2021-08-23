@@ -27,6 +27,5 @@ import { AmqpModule } from './amqp/amqp.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [],
 })
 export class AppModule {}
