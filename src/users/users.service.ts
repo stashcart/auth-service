@@ -17,7 +17,7 @@ export class UsersService {
     const savedUser = await this.usersRepository.save(user);
 
     await this.amqpService.publish(
-      'user',
+      'user.write',
       'user.created',
       new UserDto(savedUser)
     );
