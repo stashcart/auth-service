@@ -19,6 +19,7 @@ import { AmqpModule } from './amqp/amqp.module';
         database: configService.get('DB_NAME'),
         password: configService.get('DB_PASSWORD'),
         autoLoadEntities: true,
+        logging: true,
         synchronize: true,
       }),
     }),
