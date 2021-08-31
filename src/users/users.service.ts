@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AmqpService } from 'src/amqp/amqp.service';
 import { Repository } from 'typeorm';
@@ -33,7 +33,13 @@ export class UsersService {
     return this.usersRepository.findOne({ email });
   }
 
-  async findById(id: number): Promise<User | undefined> {
-    return this.usersRepository.findOne(id);
+  async findById(id: number): Promise<User> {
+    const user = await this.usersRepository.findOne(id);
+
+    if (!user) {
+      throw new NotFoundException(`User: ${id}`);
+    }
+
+    return user;
   }
 }
