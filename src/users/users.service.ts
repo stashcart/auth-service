@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AmqpService } from 'src/amqp/amqp.service';
 import { Repository } from 'typeorm';
-import { UserDto } from '../_common/dto/user.dto';
+import { UserDto } from './dto/user.dto';
+import { ProfileDto } from './dto/profile.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -25,6 +26,18 @@ export class UsersService {
     return user;
   }
 
+  async patchUserByProfile(profileDto: ProfileDto): Promise<User> {
+    const user = await this.usersRepository.findOne(profileDto.id);
+
+    if (!user) {
+      throw new NotFoundException(`User: ${profileDto.id}`);
+    }
+
+    user.email = profileDto.email;
+
+    return this.usersRepository.save(user);
+  }
+
   async findAll(): Promise<User[]> {
     return this.usersRepository.find();
   }
@@ -33,7 +46,7 @@ export class UsersService {
     return this.usersRepository.findOne({ email });
   }
 
-  async findById(id: number): Promise<User> {
+  async findById(id: string): Promise<User> {
     const user = await this.usersRepository.findOne(id);
 
     if (!user) {

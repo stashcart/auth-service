@@ -4,7 +4,7 @@ import { compare, hash } from 'bcrypt';
 import { classToPlain } from 'class-transformer';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { UserDto } from 'src/_common/dto/user.dto';
+import { UserDto } from 'src/users/dto/user.dto';
 import { AuthRequestDto } from './dto/auth.request.dto';
 import { JwtTokenPayload } from './utils/jwt-token-payload';
 

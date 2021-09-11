@@ -1,8 +1,8 @@
 import { User } from 'src/users/entities/user.entity';
-import { UserDto } from 'src/_common/dto/user.dto';
+import { UserDto } from 'src/users/dto/user.dto';
 
 export class JwtTokenPayload {
-  sub: number;
+  sub: string;
 
   constructor(user: User | UserDto) {
     this.sub = user.id;

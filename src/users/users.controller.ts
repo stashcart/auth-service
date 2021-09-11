@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { UserDto } from 'src/_common/dto/user.dto';
+import { UserDto } from 'src/users/dto/user.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -16,7 +16,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: number): Promise<UserDto> {
+  async findById(@Param('id') id: string): Promise<UserDto> {
     const user = await this.usersService.findById(id);
 
     return new UserDto(user);
