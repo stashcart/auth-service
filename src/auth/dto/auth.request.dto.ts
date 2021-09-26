@@ -6,10 +6,10 @@ export class AuthRequestDto {
     example: `user-${Math.floor(Math.random() * 10000)}@gmail.com`,
   })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'user' })
   @IsNotEmpty()
   @IsString()
-  password: string;
+  password!: string;
 }

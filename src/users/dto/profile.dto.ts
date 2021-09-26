@@ -1,9 +1,9 @@
 export class ProfileDto {
-  id: string;
+  id!: string;
 
-  email: string;
+  email!: string;
 
-  name: string;
+  name!: string;
 
-  phone: string;
+  phone!: string;
 }

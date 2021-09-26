@@ -9,7 +9,7 @@ import { AmqpService } from './amqp.service';
     RabbitMQModule.forRootAsync(RabbitMQModule, {
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        uri: configService.get('AMQP_URL'),
+        uri: configService.get('AMQP_URL', ''),
         exchanges: [
           {
             name: 'user.write',
