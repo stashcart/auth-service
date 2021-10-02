@@ -5,7 +5,7 @@ import { classToPlain } from 'class-transformer';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { UserDto } from 'src/users/dto/user.dto';
-import { AuthRequestDto } from './dto/auth.request.dto';
+import { RegisterRequestDto } from './dto/register.request.dto';
 import { JwtTokenPayload } from './utils/jwt-token-payload';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class AuthService {
     private readonly usersService: UsersService
   ) {}
 
-  async registerUser({ email, password }: AuthRequestDto): Promise<User> {
+  async registerUser({ email, password }: RegisterRequestDto): Promise<User> {
     const user = new User();
 
     user.email = email;
