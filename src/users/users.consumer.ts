@@ -8,7 +8,7 @@ export class UsersConsumer {
   constructor(private readonly usersService: UsersService) {}
 
   @RabbitSubscribe({
-    exchange: 'profile.write',
+    exchange: 'profile',
     routingKey: 'profile.updated',
     queue: 'profile.updated.auth-service',
   })
