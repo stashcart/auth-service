@@ -10,6 +10,7 @@ export class UsersConsumer {
   @RabbitSubscribe({
     exchange: 'profile.write',
     routingKey: 'profile.updated',
+    queue: 'profile.updated.auth-service',
   })
   patchUserByProfile(profileDto: ProfileDto) {
     this.usersService.patchUserByProfile(profileDto);
