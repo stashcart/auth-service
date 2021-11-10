@@ -37,9 +37,8 @@ export class AuthService {
     return null;
   }
 
-  async generateAccessToken(user: User | UserDto): Promise<string> {
+  generateAccessToken(user: User | UserDto): string {
     const payload = new JwtTokenPayload(user);
-
     return this.jwtService.sign(classToPlain(payload));
   }
 }

@@ -33,5 +33,6 @@ module.exports = {
 
     'class-methods-use-this': OFF,
     'prefer-destructing': OFF,
+    'require-await': WARN,
   },
 };
