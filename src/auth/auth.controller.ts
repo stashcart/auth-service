@@ -5,10 +5,11 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { User } from './decorators/user.decorators';
 import { RegisterRequestDto } from './dto/register.request.dto';
-import { AuthResponseDto } from './dto/auth.response.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LoginRequestDto } from './dto/login.request.dto';
-import { VerifyRequestDto } from './dto/verify.request.dto';
+import { VerifyAccessTokenRequestDto } from './dto/verify-access-token.request.dto';
+import { TokenPair } from './utils/token-pair';
+import { RefreshTokenPairRequestDto } from './dto/refresh-token-pair.request.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -21,23 +22,32 @@ export class AuthController {
   @Post('register')
   async register(
     @Body() registerRequestDto: RegisterRequestDto
-  ): Promise<AuthResponseDto> {
+  ): Promise<TokenPair> {
     const user = await this.authService.registerUser(registerRequestDto);
-    const token = await this.authService.generateAccessToken(user);
-    return new AuthResponseDto(token);
+    return this.authService.generateTokenPair(user.id);
   }
 
   @ApiBody({ type: LoginRequestDto })
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  async login(@User() user: UserDto) {
-    const token = await this.authService.generateAccessToken(user);
-    return new AuthResponseDto(token);
+  login(@User() user: UserDto): Promise<TokenPair> {
+    return this.authService.generateTokenPair(user.id);
   }
 
   @Post('verify')
-  verify(@Body() verifyRequestDto: VerifyRequestDto) {
-    const payload = this.jwtService.verify(verifyRequestDto.authToken);
+  verifyAccessToken(
+    @Body() verifyAccessTokenRequestDto: VerifyAccessTokenRequestDto
+  ) {
+    const payload = this.jwtService.verify(
+      verifyAccessTokenRequestDto.accessToken
+    );
     return payload.sub;
+  }
+
+  @Post('refresh')
+  refreshTokenPair(
+    @Body() { refreshToken }: RefreshTokenPairRequestDto
+  ): Promise<TokenPair> {
+    return this.authService.refreshTokenPair(refreshToken);
   }
 }
