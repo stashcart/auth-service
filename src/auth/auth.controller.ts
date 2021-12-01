@@ -10,6 +10,7 @@ import { LoginRequestDto } from './dto/login.request.dto';
 import { VerifyAccessTokenRequestDto } from './dto/verify-access-token.request.dto';
 import { TokenPair } from './utils/token-pair';
 import { RefreshTokenPairRequestDto } from './dto/refresh-token-pair.request.dto';
+import { GoogleAuthRequestDto } from './dto/google-auth.request.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -49,5 +50,13 @@ export class AuthController {
     @Body() { refreshToken }: RefreshTokenPairRequestDto
   ): Promise<TokenPair> {
     return this.authService.refreshTokenPair(refreshToken);
+  }
+
+  @Post('google')
+  async loginWithGoogle(
+    @Body() { idToken }: GoogleAuthRequestDto
+  ): Promise<TokenPair> {
+    const user = await this.authService.findOrCreateGoogleUser(idToken);
+    return this.authService.generateTokenPair(user.id);
   }
 }

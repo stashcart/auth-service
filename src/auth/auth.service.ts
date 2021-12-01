@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
 import { classToPlain } from 'class-transformer';
@@ -10,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { addSeconds, differenceInSeconds } from 'date-fns';
 import { InjectRepository } from '@nestjs/typeorm';
+import { OAuth2Client } from 'google-auth-library';
 import { RegisterRequestDto } from './dto/register.request.dto';
 import { JwtTokenPayload } from './utils/jwt-token-payload';
 import { RefreshToken } from './entities/refresh-token.entity';
@@ -22,7 +27,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     @InjectRepository(RefreshToken)
-    private readonly refreshTokensRepository: Repository<RefreshToken>
+    private readonly refreshTokensRepository: Repository<RefreshToken>,
+    private readonly googleOauthClient: OAuth2Client
   ) {}
 
   async registerUser({ email, password }: RegisterRequestDto): Promise<User> {
@@ -96,5 +102,29 @@ export class AuthService {
 
   private isRefreshTokenExpired(expiresAt: Date): boolean {
     return differenceInSeconds(expiresAt, new Date()) <= 0;
+  }
+
+  async findOrCreateGoogleUser(idToken: string): Promise<User> {
+    const googlePayload = await this.googleOauthClient
+      .verifyIdToken({
+        idToken,
+      })
+      .catch(() => {
+        throw new BadRequestException('Error during verification of idToken');
+      });
+
+    const email = googlePayload.getPayload()?.email;
+
+    if (!email) {
+      throw new BadRequestException("User doesn't have an email");
+    }
+
+    const user = await this.usersService.findOneByEmail(email);
+
+    if (user) {
+      return user;
+    }
+
+    return this.usersService.create({ email });
   }
 }

@@ -14,7 +14,7 @@ export class UsersService {
     private readonly amqpService: AmqpService
   ) {}
 
-  async create(user: User): Promise<User> {
+  async create(user: { email: string; password?: string }): Promise<User> {
     const savedUser = await this.usersRepository.save(user);
 
     await this.amqpService.publish(
@@ -23,7 +23,7 @@ export class UsersService {
       new UserDto(savedUser)
     );
 
-    return user;
+    return savedUser;
   }
 
   async patchUserByProfile(profileDto: ProfileDto): Promise<User> {
