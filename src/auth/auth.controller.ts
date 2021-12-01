@@ -53,7 +53,7 @@ export class AuthController {
   }
 
   @Post('google')
-  async loginWithGoogle(
+  async authWithGoogle(
     @Body() { idToken }: GoogleAuthRequestDto
   ): Promise<TokenPair> {
     const user = await this.authService.findOrCreateGoogleUser(idToken);
