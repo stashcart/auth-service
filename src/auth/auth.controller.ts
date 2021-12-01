@@ -25,14 +25,14 @@ export class AuthController {
     @Body() registerRequestDto: RegisterRequestDto
   ): Promise<TokenPair> {
     const user = await this.authService.registerUser(registerRequestDto);
-    return this.authService.generateTokenPair(user.id);
+    return this.authService.generateTokenPairFromUser(user);
   }
 
   @ApiBody({ type: LoginRequestDto })
   @Post('login')
   @UseGuards(LocalAuthGuard)
   login(@User() user: UserDto): Promise<TokenPair> {
-    return this.authService.generateTokenPair(user.id);
+    return this.authService.generateTokenPairFromUserId(user.id);
   }
 
   @Post('verify')
@@ -57,6 +57,6 @@ export class AuthController {
     @Body() { idToken }: GoogleAuthRequestDto
   ): Promise<TokenPair> {
     const user = await this.authService.findOrCreateGoogleUser(idToken);
-    return this.authService.generateTokenPair(user.id);
+    return this.authService.generateTokenPairFromUser(user);
   }
 }

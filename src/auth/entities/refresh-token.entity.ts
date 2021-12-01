@@ -12,8 +12,6 @@ export class RefreshToken {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  userId!: string;
-
   @Column({ unique: true })
   token!: string;
 

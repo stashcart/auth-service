@@ -53,9 +53,12 @@ export class AuthService {
     return null;
   }
 
-  async generateTokenPair(userId: string): Promise<TokenPair> {
+  async generateTokenPairFromUserId(userId: string): Promise<TokenPair> {
     const user = await this.usersService.findById(userId);
+    return this.generateTokenPairFromUser(user);
+  }
 
+  async generateTokenPairFromUser(user: User): Promise<TokenPair> {
     const accessToken = this.generateAccessToken(new UserDto(user));
     const refreshToken = await this.generateRefreshToken(user);
 
@@ -83,9 +86,12 @@ export class AuthService {
   }
 
   async refreshTokenPair(refreshToken: string): Promise<TokenPair> {
-    const oldRefreshToken = await this.refreshTokensRepository.findOne({
-      token: refreshToken,
-    });
+    const oldRefreshToken = await this.refreshTokensRepository.findOne(
+      {
+        token: refreshToken,
+      },
+      { relations: ['user'] }
+    );
 
     if (!oldRefreshToken) {
       throw new UnauthorizedException();
@@ -97,7 +103,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    return this.generateTokenPair(oldRefreshToken.userId);
+    return this.generateTokenPairFromUser(oldRefreshToken.user);
   }
 
   private isRefreshTokenExpired(expiresAt: Date): boolean {
