@@ -1,37 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AmqpService } from 'src/amqp/amqp.service';
 import { Repository } from 'typeorm';
-import { UserDto } from './dto/user.dto';
 import { ProfileDto } from './dto/profile.dto';
 import { User } from './entities/user.entity';
-
-interface CreateUserParams {
-  email: string;
-  password?: string;
-}
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-    private readonly amqpService: AmqpService
+    private readonly usersRepository: Repository<User>
   ) {}
 
-  async createAndPublish(user: CreateUserParams): Promise<User> {
-    const savedUser = await this.create(user);
-
-    await this.amqpService.publish(
-      'user.write',
-      'user.created',
-      new UserDto(savedUser)
-    );
-
-    return savedUser;
-  }
-
-  create(user: CreateUserParams): Promise<User> {
+  create(user: { email: string; password?: string }): Promise<User> {
     return this.usersRepository.save(user);
   }
 

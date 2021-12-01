@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OAuth2Client } from 'google-auth-library';
+import { AmqpModule } from 'src/amqp/amqp.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './strategies/local.strategy';
@@ -21,6 +22,7 @@ import { RefreshToken } from './entities/refresh-token.entity';
       }),
     }),
     PassportModule,
+    AmqpModule,
     UsersModule,
   ],
   controllers: [AuthController],

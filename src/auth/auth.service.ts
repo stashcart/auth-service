@@ -3,24 +3,25 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcrypt';
 import { classToPlain } from 'class-transformer';
-import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { UserDto } from 'src/users/dto/user.dto';
-import { Repository } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { addSeconds, differenceInSeconds } from 'date-fns';
-import { InjectRepository } from '@nestjs/typeorm';
 import { OAuth2Client } from 'google-auth-library';
-import { RegisterRequestDto } from './dto/register.request.dto';
-import { JwtTokenPayload } from './helpers/jwt-token-payload';
-import { RefreshToken } from './entities/refresh-token.entity';
-import { TokenPairDto } from './dto/token-pair.dto';
-import { GoogleUserData } from './helpers/google-user-data';
+import { AmqpService } from 'src/amqp/amqp.service';
+import { UserDto } from 'src/users/dto/user.dto';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
+import { Repository } from 'typeorm';
 import { GoogleProfileDto } from './dto/google-profile.dto';
+import { OauthUserDto } from './dto/oauth-user.dto';
+import { RegisterRequestDto } from './dto/register.request.dto';
+import { TokenPairDto } from './dto/token-pair.dto';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { JwtTokenPayload } from './helpers/jwt-token-payload';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +31,8 @@ export class AuthService {
     private readonly usersService: UsersService,
     @InjectRepository(RefreshToken)
     private readonly refreshTokensRepository: Repository<RefreshToken>,
-    private readonly googleOauthClient: OAuth2Client
+    private readonly googleOauthClient: OAuth2Client,
+    private readonly amqpService: AmqpService
   ) {}
 
   async registerUser({ email, password }: RegisterRequestDto): Promise<User> {
@@ -39,7 +41,15 @@ export class AuthService {
     user.email = email;
     user.password = await hash(password, 10);
 
-    return this.usersService.createAndPublish(user);
+    const createdUser = await this.usersService.create(user);
+
+    await this.amqpService.publish(
+      'user',
+      'user.created',
+      new OauthUserDto({ user: createdUser })
+    );
+
+    return createdUser;
   }
 
   async validateAndGetUser(
@@ -112,7 +122,7 @@ export class AuthService {
     return differenceInSeconds(expiresAt, new Date()) <= 0;
   }
 
-  async findOrCreateGoogleUser(idToken: string): Promise<GoogleUserData> {
+  async findOrCreateGoogleUser(idToken: string): Promise<User> {
     const googleLoginTicket = await this.googleOauthClient
       .verifyIdToken({
         idToken,
@@ -135,11 +145,17 @@ export class AuthService {
     const googleProfile = new GoogleProfileDto(googleTokenPayload);
 
     if (user) {
-      return new GoogleUserData(user, googleProfile, false);
+      return user;
     }
 
     const createdUser = await this.usersService.create({ email });
 
-    return new GoogleUserData(createdUser, googleProfile, true);
+    await this.amqpService.publish(
+      'user',
+      'user.created',
+      new OauthUserDto({ user: createdUser, googleProfile })
+    );
+
+    return createdUser;
   }
 }
