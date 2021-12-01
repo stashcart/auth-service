@@ -1,14 +1,14 @@
 import { User } from 'src/users/entities/user.entity';
-import { GoogleProfile } from './google-profile';
+import { GoogleProfileDto } from '../dto/google-profile.dto';
 
 export class GoogleUserData {
   user!: User;
 
-  googleProfile!: GoogleProfile;
+  googleProfile!: GoogleProfileDto;
 
   isNew!: boolean;
 
-  constructor(user: User, googleProfile: GoogleProfile, isNew: boolean) {
+  constructor(user: User, googleProfile: GoogleProfileDto, isNew: boolean) {
     this.user = user;
     this.googleProfile = googleProfile;
     this.isNew = isNew;

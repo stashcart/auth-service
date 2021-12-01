@@ -18,9 +18,9 @@ import { OAuth2Client } from 'google-auth-library';
 import { RegisterRequestDto } from './dto/register.request.dto';
 import { JwtTokenPayload } from './helpers/jwt-token-payload';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { TokenPair } from './helpers/token-pair';
+import { TokenPairDto } from './dto/token-pair.dto';
 import { GoogleUserData } from './helpers/google-user-data';
-import { GoogleProfile } from './helpers/google-profile';
+import { GoogleProfileDto } from './dto/google-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -55,16 +55,16 @@ export class AuthService {
     return null;
   }
 
-  async generateTokenPairFromUserId(userId: string): Promise<TokenPair> {
+  async generateTokenPairFromUserId(userId: string): Promise<TokenPairDto> {
     const user = await this.usersService.findById(userId);
     return this.generateTokenPairFromUser(user);
   }
 
-  async generateTokenPairFromUser(user: User): Promise<TokenPair> {
+  async generateTokenPairFromUser(user: User): Promise<TokenPairDto> {
     const accessToken = this.generateAccessToken(new UserDto(user));
     const refreshToken = await this.generateRefreshToken(user);
 
-    return new TokenPair(accessToken, refreshToken);
+    return new TokenPairDto(accessToken, refreshToken);
   }
 
   private generateAccessToken(user: UserDto): string {
@@ -87,7 +87,7 @@ export class AuthService {
     return refreshToken.token;
   }
 
-  async refreshTokenPair(refreshToken: string): Promise<TokenPair> {
+  async refreshTokenPair(refreshToken: string): Promise<TokenPairDto> {
     const oldRefreshToken = await this.refreshTokensRepository.findOne(
       {
         token: refreshToken,
@@ -132,7 +132,7 @@ export class AuthService {
     }
 
     const user = await this.usersService.findOneByEmail(email);
-    const googleProfile = new GoogleProfile(googleTokenPayload);
+    const googleProfile = new GoogleProfileDto(googleTokenPayload);
 
     if (user) {
       return new GoogleUserData(user, googleProfile, false);

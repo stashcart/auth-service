@@ -1,6 +1,6 @@
 import { TokenPayload } from 'google-auth-library';
 
-export class GoogleProfile {
+export class GoogleProfileDto {
   name?: string;
 
   constructor(googleTokenPayload: TokenPayload) {

@@ -1,18 +1,18 @@
 import { UserDto } from 'src/users/dto/user.dto';
-import { GoogleProfile } from '../helpers/google-profile';
+import { GoogleProfileDto } from './google-profile.dto';
 import { GoogleUserData } from '../helpers/google-user-data';
-import { TokenPair } from '../helpers/token-pair';
+import { TokenPairDto } from './token-pair.dto';
 
 export class GoogleAuthResponseDto {
   user!: UserDto;
 
-  googleProfile!: GoogleProfile;
+  googleProfile!: GoogleProfileDto;
 
   isNew!: boolean;
 
-  tokenPair!: TokenPair;
+  tokenPair!: TokenPairDto;
 
-  constructor(googleUserData: GoogleUserData, tokenPair: TokenPair) {
+  constructor(googleUserData: GoogleUserData, tokenPair: TokenPairDto) {
     this.user = new UserDto(googleUserData.user);
     this.googleProfile = googleUserData.googleProfile;
     this.isNew = googleUserData.isNew;

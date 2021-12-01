@@ -8,7 +8,7 @@ import { RegisterRequestDto } from './dto/register.request.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LoginRequestDto } from './dto/login.request.dto';
 import { VerifyAccessTokenRequestDto } from './dto/verify-access-token.request.dto';
-import { TokenPair } from './helpers/token-pair';
+import { TokenPairDto } from './dto/token-pair.dto';
 import { RefreshTokenPairRequestDto } from './dto/refresh-token-pair.request.dto';
 import { GoogleAuthRequestDto } from './dto/google-auth.request.dto';
 import { GoogleAuthResponseDto } from './dto/google-auth.response.dto';
@@ -24,7 +24,7 @@ export class AuthController {
   @Post('register')
   async register(
     @Body() registerRequestDto: RegisterRequestDto
-  ): Promise<TokenPair> {
+  ): Promise<TokenPairDto> {
     const user = await this.authService.registerUser(registerRequestDto);
     return this.authService.generateTokenPairFromUser(user);
   }
@@ -32,14 +32,14 @@ export class AuthController {
   @ApiBody({ type: LoginRequestDto })
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  login(@User() user: UserDto): Promise<TokenPair> {
+  login(@User() user: UserDto): Promise<TokenPairDto> {
     return this.authService.generateTokenPairFromUserId(user.id);
   }
 
   @Post('verify')
   verifyAccessToken(
     @Body() verifyAccessTokenRequestDto: VerifyAccessTokenRequestDto
-  ) {
+  ): Promise<string> {
     const payload = this.jwtService.verify(
       verifyAccessTokenRequestDto.accessToken
     );
@@ -49,7 +49,7 @@ export class AuthController {
   @Post('refresh')
   refreshTokenPair(
     @Body() { refreshToken }: RefreshTokenPairRequestDto
-  ): Promise<TokenPair> {
+  ): Promise<TokenPairDto> {
     return this.authService.refreshTokenPair(refreshToken);
   }
 
