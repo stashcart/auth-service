@@ -8,9 +8,10 @@ import { RegisterRequestDto } from './dto/register.request.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LoginRequestDto } from './dto/login.request.dto';
 import { VerifyAccessTokenRequestDto } from './dto/verify-access-token.request.dto';
-import { TokenPair } from './utils/token-pair';
+import { TokenPair } from './helpers/token-pair';
 import { RefreshTokenPairRequestDto } from './dto/refresh-token-pair.request.dto';
 import { GoogleAuthRequestDto } from './dto/google-auth.request.dto';
+import { GoogleAuthResponseDto } from './dto/google-auth.response.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -55,8 +56,14 @@ export class AuthController {
   @Post('google')
   async authWithGoogle(
     @Body() { idToken }: GoogleAuthRequestDto
-  ): Promise<TokenPair> {
-    const user = await this.authService.findOrCreateGoogleUser(idToken);
-    return this.authService.generateTokenPairFromUser(user);
+  ): Promise<GoogleAuthResponseDto> {
+    const googleUserData = await this.authService.findOrCreateGoogleUser(
+      idToken
+    );
+    const tokenPair = await this.authService.generateTokenPairFromUser(
+      googleUserData.user
+    );
+
+    return new GoogleAuthResponseDto(googleUserData, tokenPair);
   }
 }

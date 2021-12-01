@@ -16,9 +16,11 @@ import { addSeconds, differenceInSeconds } from 'date-fns';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OAuth2Client } from 'google-auth-library';
 import { RegisterRequestDto } from './dto/register.request.dto';
-import { JwtTokenPayload } from './utils/jwt-token-payload';
+import { JwtTokenPayload } from './helpers/jwt-token-payload';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { TokenPair } from './utils/token-pair';
+import { TokenPair } from './helpers/token-pair';
+import { GoogleUserData } from './helpers/google-user-data';
+import { GoogleProfile } from './helpers/google-profile';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +39,7 @@ export class AuthService {
     user.email = email;
     user.password = await hash(password, 10);
 
-    return this.usersService.create(user);
+    return this.usersService.createAndPublish(user);
   }
 
   async validateAndGetUser(
@@ -110,8 +112,8 @@ export class AuthService {
     return differenceInSeconds(expiresAt, new Date()) <= 0;
   }
 
-  async findOrCreateGoogleUser(idToken: string): Promise<User> {
-    const googlePayload = await this.googleOauthClient
+  async findOrCreateGoogleUser(idToken: string): Promise<GoogleUserData> {
+    const googleLoginTicket = await this.googleOauthClient
       .verifyIdToken({
         idToken,
       })
@@ -119,18 +121,25 @@ export class AuthService {
         throw new BadRequestException('Error during verification of idToken');
       });
 
-    const email = googlePayload.getPayload()?.email;
+    const googleTokenPayload = googleLoginTicket?.getPayload();
+    if (!googleTokenPayload) {
+      throw new BadRequestException('Error during reading google payload');
+    }
 
+    const email = googleTokenPayload?.email;
     if (!email) {
       throw new BadRequestException("User doesn't have an email");
     }
 
     const user = await this.usersService.findOneByEmail(email);
+    const googleProfile = new GoogleProfile(googleTokenPayload);
 
     if (user) {
-      return user;
+      return new GoogleUserData(user, googleProfile, false);
     }
 
-    return this.usersService.create({ email });
+    const createdUser = await this.usersService.create({ email });
+
+    return new GoogleUserData(createdUser, googleProfile, true);
   }
 }

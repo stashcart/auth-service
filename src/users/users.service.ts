@@ -6,6 +6,11 @@ import { UserDto } from './dto/user.dto';
 import { ProfileDto } from './dto/profile.dto';
 import { User } from './entities/user.entity';
 
+interface CreateUserParams {
+  email: string;
+  password?: string;
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -14,8 +19,8 @@ export class UsersService {
     private readonly amqpService: AmqpService
   ) {}
 
-  async create(user: { email: string; password?: string }): Promise<User> {
-    const savedUser = await this.usersRepository.save(user);
+  async createAndPublish(user: CreateUserParams): Promise<User> {
+    const savedUser = await this.create(user);
 
     await this.amqpService.publish(
       'user.write',
@@ -24,6 +29,10 @@ export class UsersService {
     );
 
     return savedUser;
+  }
+
+  create(user: CreateUserParams): Promise<User> {
+    return this.usersRepository.save(user);
   }
 
   async patchUserByProfile(profileDto: ProfileDto): Promise<User> {
